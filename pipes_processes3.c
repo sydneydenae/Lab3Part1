@@ -16,7 +16,7 @@ int main(int argc, char **argv)
 {
   int pipefd[2];
   int pipefdSort[2];
-  int pid;
+  pid_t pid;
 
   if(argc < 2) {
     fprintf(stderr, "Usage: %s\n", argv[0]);
@@ -53,7 +53,10 @@ int main(int argc, char **argv)
         // child's child gets here and handles "sort"
         dup2(pipefdSort[0], 0);
         close(pipefdSort[1]);
-         execvp("sort", sort_args); // Execute sort
+        close(pipefd[0]);
+        close(pipefd[1]);
+        execvp("sort", sort_args); // Execute sort
+        perror("exec sort failed");
         return 1;
 
       } else {
@@ -68,7 +71,7 @@ int main(int argc, char **argv)
 
         // execute grep
         execvp("grep", grep_args);
-
+        perror("exec grep failed");
         return 1;
         
       }
@@ -89,6 +92,7 @@ int main(int argc, char **argv)
       // execute cat
 
       execvp("cat", cat_args);
+      perror("exec cat failed");
       return 1;
     }
 
